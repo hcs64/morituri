@@ -300,7 +300,9 @@ class AccurateRipChecksumTask(ChecksumTask):
             # ... on 5th frame, only use last value
             elif self._discFrameCounter == 5:
                 values = struct.unpack("<I", buf[-4:])
-                checksum += common.SAMPLES_PER_FRAME * 5 * values[0]
+                mvalue = common.SAMPLES_PER_FRAME * 5 * values[0]
+                (hi, lo) = divmod(mvalue, 2 ** 32)
+                checksum += lo + hi
                 checksum &= 0xFFFFFFFF
                 return checksum
 
@@ -314,7 +316,9 @@ class AccurateRipChecksumTask(ChecksumTask):
         values = struct.unpack("<%dI" % (len(buf) / 4), buf)
         for i, value in enumerate(values):
             # self._bytes is updated after do_checksum_buffer
-            checksum += (self._bytes / 4 + i + 1) * value
+            mvalue = (self._bytes / 4 + i + 1) * value
+            (hi, lo) = divmod(mvalue, 2 ** 32)
+            checksum += lo + hi
             checksum &= 0xFFFFFFFF
             # offset = self._bytes / 4 + i + 1
             # if offset % common.SAMPLES_PER_FRAME == 0:
